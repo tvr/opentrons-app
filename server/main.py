@@ -60,6 +60,22 @@ def welcome():
     return render_template("index.html")
 
 
+@app.route('/dist/<path:filename>')
+def script_loader(filename):
+    root = helpers.get_frozen_root() or app.root_path
+    scripts_root_path = os.path.join(root, 'templates', 'dist')
+    return flask.send_from_directory(
+        scripts_root_path, filename, mimetype='application/javascript'
+    )
+
+
+@app.route("/app_version")
+def app_version():
+    return flask.jsonify({
+        'version': os.environ.get("appVersion")
+    })
+
+
 @app.route("/upload", methods=["POST"])
 def upload():
     global filename
@@ -203,15 +219,6 @@ def stop():
     })
 
 
-@app.route('/dist/<path:filename>')
-def script_loader(filename):
-    root = helpers.get_frozen_root() or app.root_path
-    scripts_root_path = os.path.join(root, 'templates', 'dist')
-    return flask.send_from_directory(
-        scripts_root_path, filename, mimetype='application/javascript'
-    )
-
-
 @app.route("/robot/serial/list")
 def get_serial_ports_list():
     global robot
@@ -250,13 +257,6 @@ def get_versions():
     global robot
     return flask.jsonify({
         'versions': robot.versions()
-    })
-
-
-@app.route("/app_version")
-def app_version():
-    return flask.jsonify({
-        'version': os.environ.get("appVersion")
     })
 
 
