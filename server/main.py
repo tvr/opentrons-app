@@ -873,21 +873,20 @@ def calibrate_plunger():
 
 
 @app.route("/calibrate_belts", methods=["POST"])
-def calibrate_belts(self):
+def calibrate_belts():
 
     expected = request.json.get("expected")
     measured = request.json.get("measured")
 
     for axis in 'xy':
         robot._driver.calibrate_steps_per_mm(
-            'x', expected[axis], measured[axis])
+            axis, expected[axis], measured[axis])
 
     robot._driver.reset()
     robot.disconnect()
 
     return flask.jsonify({
-        'status': 'success',
-        'data': {}
+        'status': 'success'
     })
 
 # NOTE(Ahmed): DO NOT REMOVE socketio requires a confirmation from the
