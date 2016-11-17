@@ -6,14 +6,11 @@ import json
 import time
 
 import flask
-import traceback
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO
 from flask_cors import CORS
 
-from opentrons.instruments import Pipette
 from opentrons import robot
-from opentrons.containers import placeable
 from opentrons.util import trace
 from opentrons.util.vector import VectorEncoder
 
@@ -41,6 +38,15 @@ filename = "x"
 last_modified = "y"
 
 
+def emit_notifications(notifications, _type):
+    for notification in notifications:
+        socketio.emit('event', {
+            'name': 'notification',
+            'text': notification,
+            'type': _type
+        })
+
+
 def notify(info):
     s = json.dumps(info, cls=VectorEncoder)
     socketio.emit('event', json.loads(s))
@@ -52,56 +58,6 @@ trace.EventBroker.get_instance().add(notify)
 @app.route("/")
 def welcome():
     return render_template("index.html")
-
-
-def get_protocol_locals():
-    from opentrons import robot, containers, instruments  # NOQA
-    return locals()
-
-
-def load_python(stream, filename):
-    global robot
-    code = helpers.convert_byte_stream_to_str(stream)
-    api_response = {'errors': [], 'warnings': []}
-
-    robot.reset()
-
-    patched_robot, restore_patched_robot = (
-        helpers.get_upload_proof_robot(robot)
-    )
-    try:
-        try:
-            exec(code, globals(), get_protocol_locals())
-        except Exception as e:
-            tb = e.__traceback__
-            stack_list = traceback.extract_tb(tb)
-            _, line, name, text = stack_list[-1]
-            if 'exec' in text:
-                text = None
-            raise Exception(
-                'Error in protocol file line {} : {}\n{}'.format(
-                    line,
-                    str(e),
-                    text or ''
-                )
-            )
-
-        robot = restore_patched_robot()
-        robot.simulate()
-        if len(robot._commands) == 0:
-            error = (
-                "This protocol does not contain any commands for the robot."
-            )
-            api_response['errors'] = error
-    except Exception as e:
-        app.logger.error(e)
-        api_response['errors'] = [str(e)]
-    finally:
-        robot = restore_patched_robot()
-
-    api_response['warnings'] = robot.get_warnings() or []
-
-    return api_response
 
 
 @app.route("/upload", methods=["POST"])
@@ -123,7 +79,7 @@ def upload():
 
     api_response = None
     if extension == 'py':
-        api_response = load_python(file.stream, file)
+        api_response = helpers.load_python(file.stream, file)
     elif extension == 'json':
         api_response = helpers.load_json(file.stream)
     else:
@@ -143,7 +99,7 @@ def upload():
         emit_notifications(
             ["Successfully uploaded {}".format(file.filename)], 'success')
         status = 'success'
-        calibrations = create_step_list()
+        calibrations = helpers.create_step_list()
 
     return flask.jsonify({
         'status': status,
@@ -161,7 +117,7 @@ def upload():
 def load():
     status = "success"
     try:
-        calibrations = update_step_list()
+        calibrations = helpers.update_step_list()
     except Exception as e:
         emit_notifications([str(e)], "danger")
         status = 'error'
@@ -175,14 +131,6 @@ def load():
         }
     })
 
-def emit_notifications(notifications, _type):
-    for notification in notifications:
-        socketio.emit('event', {
-            'name': 'notification',
-            'text': notification,
-            'type': _type
-        })
-
 
 def _run_commands():
     start_time = time.time()
@@ -194,9 +142,6 @@ def _run_commands():
         robot.resume()
         robot.home()
         robot.run(caller='ui')
-        if len(robot._commands) == 0:
-            error = "This protocol does not contain any commands for the robot."
-            api_response['errors'] = [error]
     except Exception as e:
         api_response['errors'] = [str(e)]
 
@@ -212,6 +157,7 @@ def _run_commands():
     result = "Run complete in {}".format(run_time)
     emit_notifications([result], 'success')
     socketio.emit('event', {'name': 'run-finished'})
+
 
 @app.route("/run", methods=["GET"])
 def run():
@@ -340,40 +286,6 @@ def connect_robot():
     })
 
 
-
-def _start_connection_watcher():
-    global robot
-    connection_state_watcher, watcher_should_run = BACKGROUND_TASKS.get(
-        'CONNECTION_STATE_WATCHER',
-        (None, None)
-    )
-
-    if connection_state_watcher and watcher_should_run:
-        watcher_should_run.set()
-
-    watcher_should_run = threading.Event()
-
-    def watch_connection_state(should_run):
-        while not should_run.is_set():
-            socketio.emit(
-                'event',
-                {
-                    'type': 'connection_status',
-                    'is_connected': robot.is_connected()
-                }
-            )
-            socketio.sleep(1.5)
-
-    connection_state_watcher = socketio.start_background_task(
-        watch_connection_state,
-        (watcher_should_run)
-    )
-    BACKGROUND_TASKS['CONNECTION_STATE_WATCHER'] = (
-        connection_state_watcher,
-        watcher_should_run
-    )
-
-
 @app.route("/robot/serial/disconnect")
 def disconnect_robot():
     status = 'success'
@@ -397,7 +309,7 @@ def disconnect_robot():
 @app.route("/instruments/placeables")
 def placeables():
     try:
-        data = update_step_list()
+        data = helpers.update_step_list()
     except Exception as e:
         emit_notifications([str(e)], 'danger')
 
@@ -405,165 +317,6 @@ def placeables():
         'status': 'success',
         'data': data
     })
-
-
-def _sort_containers(container_list):
-    """
-    Returns the passed container list, sorted with tipracks first
-    then alphabetically by name
-    """
-    _tipracks = []
-    _other = []
-    for c in container_list:
-        _type = c.properties['type'].lower()
-        if 'tip' in _type:
-            _tipracks.append(c)
-        else:
-            _other.append(c)
-
-    _tipracks = sorted(
-        _tipracks,
-        key=lambda c: c.get_name().lower()
-    )
-    _other = sorted(
-        _other,
-        key=lambda c: c.get_name().lower()
-    )
-
-    return _tipracks + _other
-
-def _get_all_pipettes():
-    global robot
-    pipette_list = []
-    for _, p in robot.get_instruments():
-        if isinstance(p, Pipette):
-            pipette_list.append(p)
-    return sorted(
-        pipette_list,
-        key=lambda p: p.name.lower()
-    )
-
-def _get_all_containers():
-    """
-    Returns all containers currently on the deck
-    """
-    all_containers = list()
-    global robot
-    for slot in robot._deck:
-        if slot.has_children():
-            all_containers += slot.get_children_list()
-
-    return _sort_containers(all_containers)
-
-
-def _get_unique_containers(instrument):
-    """
-    Returns all associated containers for an instrument
-    """
-    unique_containers = set()
-    for location in instrument.placeables:
-        containers = [c for c in location.get_trace() if isinstance(
-            c, placeable.Container)]
-        unique_containers.add(containers[0])
-
-    return _sort_containers(list(unique_containers))
-
-
-def _check_if_calibrated(instrument, container):
-    """
-    Returns True if instrument holds calibration data for a Container
-    """
-    slot = container.get_parent().get_name()
-    label = container.get_name()
-    data = instrument.calibration_data
-    if slot in data:
-        if label in data[slot].get('children'):
-            return True
-    return False
-
-
-def _check_if_instrument_calibrated(instrument):
-    # TODO: rethink calibrating instruments other than Pipette
-    if not isinstance(instrument, Pipette):
-        return True
-
-    positions = instrument.positions
-    for p in positions:
-        if positions.get(p) is None:
-            return False
-
-    return True
-
-
-def _get_container_from_step(step):
-    """
-    Retruns the matching Container for a given placeable step in the step-list
-    """
-    all_containers = _get_all_containers()
-    for container in all_containers:
-        match = [
-            container.get_name() == step['label'],
-            container.get_parent().get_name() == step['slot'],
-            container.properties['type'] == step['type']
-
-        ]
-        if all(match):
-            return container
-    return None
-
-
-current_protocol_step_list = None
-
-
-def create_step_list():
-    global current_protocol_step_list
-    try:
-        current_protocol_step_list = [{
-            'axis': instrument.axis,
-            'label': instrument.name,
-            'channels': instrument.channels,
-            'placeables': [
-                {
-                    'type': container.properties['type'],
-                    'label': container.get_name(),
-                    'slot': container.get_parent().get_name()
-                }
-                for container in _get_unique_containers(instrument)
-            ]
-        } for instrument in _get_all_pipettes()]
-    except Exception as e:
-        emit_notifications([str(e)], 'danger')
-
-    return update_step_list()
-
-
-def update_step_list():
-    global current_protocol_step_list
-    if not current_protocol_step_list:
-        create_step_list()
-    try:
-        for step in current_protocol_step_list:
-            _, instrument = robot.get_instruments_by_name(step['label'])[0]
-            step.update({
-                'top': instrument.positions['top'],
-                'bottom': instrument.positions['bottom'],
-                'blow_out': instrument.positions['blow_out'],
-                'drop_tip': instrument.positions['drop_tip'],
-                'max_volume': instrument.max_volume,
-                'calibrated': _check_if_instrument_calibrated(instrument)
-            })
-
-            for placeable_step in step['placeables']:
-                c = _get_container_from_step(placeable_step)
-                if c:
-                    placeable_step.update({
-                        'calibrated': _check_if_calibrated(instrument, c)
-                    })
-    except Exception as e:
-        emit_notifications([str(e)], 'danger')
-
-    return current_protocol_step_list
-
 
 
 @app.route('/home/<axis>')
@@ -783,44 +536,21 @@ def set_max_volume():
     })
 
 
-def _calibrate_placeable(container_name, axis_name):
-
-    deck = robot._deck
-    containers = deck.containers()
-    axis_name = axis_name.upper()
-
-    if container_name not in containers:
-        raise ValueError('Container {} is not defined'.format(container_name))
-
-    if axis_name not in robot._instruments:
-        raise ValueError('Axis {} is not initialized'.format(axis_name))
-
-    instrument = robot._instruments[axis_name]
-    container = containers[container_name]
-
-    well = container[0]
-    pos = well.from_center(x=0, y=0, z=-1, reference=container)
-    location = (container, pos)
-
-    instrument.calibrate_position(location)
-    return instrument.calibration_data
-
-
 @app.route("/calibrate_placeable", methods=["POST"])
 def calibrate_placeable():
     name = request.json.get("label")
     axis = request.json.get("axis")
     try:
-        _calibrate_placeable(name, axis)
-        calibrations = update_step_list()
-        emit_notifications(['Saved {0} for the {1} axis'.format(name, axis)], 'success')
+        helpers.calibrate_placeable(name, axis)
+        calibrations = helpers.update_step_list()
+        emit_notifications(
+            ['Saved {0} for the {1} axis'.format(name, axis)], 'success')
     except Exception as e:
         emit_notifications([str(e)], 'danger')
         return flask.jsonify({
             'status': 'error',
             'data': str(e)
         })
-
 
     # TODO change calibration key to steplist
     return flask.jsonify({
@@ -833,25 +563,14 @@ def calibrate_placeable():
     })
 
 
-def _calibrate_plunger(position, axis_name):
-    axis_name = axis_name.upper()
-    if axis_name not in robot._instruments:
-        raise ValueError('Axis {} is not initialized'.format(axis_name))
-
-    instrument = robot._instruments[axis_name]
-    if position not in instrument.positions:
-        raise ValueError('Position {} is not on the plunger'.format(position))
-
-    instrument.calibrate(position)
-
-
 @app.route("/calibrate_plunger", methods=["POST"])
 def calibrate_plunger():
     position = request.json.get("position")
     axis = request.json.get("axis")
     try:
-        _calibrate_plunger(position, axis)
-        emit_notifications(['Saved {0} on the {1} pipette'.format(position, axis)], 'success')
+        helpers.calibrate_plunger(position, axis)
+        emit_notifications(
+            ['Saved {0} on the {1} pipette'.format(position, axis)], 'success')
     except Exception as e:
         emit_notifications([str(e)], 'danger')
         return flask.jsonify({
@@ -859,7 +578,7 @@ def calibrate_plunger():
             'data': str(e)
         })
 
-    calibrations = update_step_list()
+    calibrations = helpers.update_step_list()
 
     # TODO change calibration key to steplist
     return flask.jsonify({
@@ -870,7 +589,6 @@ def calibrate_plunger():
             'calibrations': calibrations
         }
     })
-
 
 
 # NOTE(Ahmed): DO NOT REMOVE socketio requires a confirmation from the
@@ -907,9 +625,7 @@ if __name__ == "__main__":
     IS_DEBUG = os.environ.get('DEBUG', '').lower() == 'true'
     if not IS_DEBUG:
         run_once(data_dir)
-    _start_connection_watcher()
 
-    from server import log  # NOQA
     lg = logging.getLogger('opentrons-app')
     lg.info('Starting Flask Server')
     [app.logger.addHandler(handler) for handler in lg.handlers]

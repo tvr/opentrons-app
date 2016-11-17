@@ -45,6 +45,7 @@ class CalibrationTestCase(unittest.TestCase):
             'file': (open(self.data_path + 'protocol.py', 'rb'), 'protocol.py')
         })
 
+        print(response.data)
         status = json.loads(response.data.decode())['status']
         self.assertEqual(status, 'success')
 
