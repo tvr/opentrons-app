@@ -35,6 +35,7 @@
       </section>
     </section>
 
+    <Coordinates></Coordinates>
     <h2 class="title">Move to Slot</h2>
     <hr>
     <DeckSlot :busy="busy"></DeckSlot>
@@ -45,6 +46,7 @@
   import DeckSlot from './DeckSlot.vue'
   import Increment from './Increment.vue'
   import IncrementPlunger from './IncrementPlunger.vue'
+  import Coordinates from './Coordinates.vue'
 
   export default {
     name: 'Jog',
@@ -58,7 +60,8 @@
     components: {
       Increment,
       IncrementPlunger,
-      DeckSlot
+      DeckSlot,
+      Coordinates
     },
     methods: {
       jog(axis, multiplier) {
