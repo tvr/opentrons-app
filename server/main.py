@@ -89,10 +89,8 @@ def load_python(stream, filename):
         robot = restore_patched_robot()
         robot.simulate()
         if len(robot._commands) == 0:
-            error = (
-                "This protocol does not contain any commands for the robot."
-            )
-            api_response['errors'] = error
+            error = "This protocol does not contain any commands for the robot."
+            api_response['errors'] = [error]
     except Exception as e:
         app.logger.error(e)
         api_response['errors'] = [str(e)]
