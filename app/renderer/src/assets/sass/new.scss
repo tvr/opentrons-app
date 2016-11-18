@@ -460,7 +460,25 @@ aside#jog {
         }
 
     }
-
+    .coords-container{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      margin-bottom: 15px;
+      .coords{
+        text-align: center;
+        border:1px solid $primary-black;
+        padding:5px;
+        border-radius:3px;
+        margin-right:10px;
+        // flex:0 0 $btn-size;
+        // height:$btn-size;
+        width:$btn-size;
+        &:last-child {
+          margin-right:0px;
+        }
+      }
+    }
 }
 
 

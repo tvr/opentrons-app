@@ -1,15 +1,10 @@
 <template>
-	<div class="coords">
-		<label class="label">X: </label>
-	  <input type="text" v-bind:value="coords.x" />
-	  <label class="label">Y: </label>
-	  <input type="text" v-bind:value="coords.y" />
-	  <label class="label">Z: </label>
-	  <input type="text" v-bind:value="coords.z" />
-	  <label class="label">A: </label>
-		<input type="text" v-bind:value="coords.a"/>
-	  <label class="label">B: </label>
-		<input type="text" v-bind:value="coords.b"/>
+	<div class="coords-container">
+	  <span class="coords">X: {{coords.x}} </span>
+	  <span class="coords">Y: {{coords.y}} </span>
+	  <span class="coords">Z: {{coords.z}} </span>
+		<span class="coords">A: {{coords.a}} </span>
+		<span class="coords">B: {{coords.b}} </span>
 	</div>
 </template>
 
