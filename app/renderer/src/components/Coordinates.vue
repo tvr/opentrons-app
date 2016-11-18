@@ -6,15 +6,16 @@
 	  <input type="text" v-bind:value="coords.y" />
 	  <label class="label">Z: </label>
 	  <input type="text" v-bind:value="coords.z" />
-	  <label class="label" v-if="instrument">{{axis}}: </label>
-		<input type="text" v-bind:value="coords[axis.toLowerCase()]" v-if="instrument"/>
+	  <label class="label">A: </label>
+		<input type="text" v-bind:value="coords.a"/>
+	  <label class="label">B: </label>
+		<input type="text" v-bind:value="coords.b"/>
 	</div>
 </template>
 
 <script>
 	export default {
 	  name: 'DeckSlot',
-	  props: ['placeable', 'instrument', 'axis'],
 	  computed: {
 			coords() {
 				let coords = this.$store.state.coordinates
