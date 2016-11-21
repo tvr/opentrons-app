@@ -22,7 +22,7 @@ if (process.env.NODE_ENV == 'development'){
 }
 
 function createWindow () {
-  mainWindow = new BrowserWindow({width: 1060, height: 790})
+  mainWindow = new BrowserWindow({width: 1060, height: 785})
   mainWindow.loadURL("http://127.0.0.1:31950")
   mainWindow.on('closed', function () {
     mainWindow = null
