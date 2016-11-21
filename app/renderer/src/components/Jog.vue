@@ -1,5 +1,8 @@
 <template>
   <aside id="jog">
+    <h2 class="title">Current Position</h2>
+    <hr>
+    <Coordinates></Coordinates>
     <h2 class="title">Pipette Jog</h2>
     <hr>
     <section id="jog-controls-pipette" :class="{'disabled': busy}">
@@ -35,7 +38,7 @@
       </section>
     </section>
 
-    <Coordinates></Coordinates>
+    
     <h2 class="title">Move to Slot</h2>
     <hr>
     <DeckSlot :busy="busy"></DeckSlot>

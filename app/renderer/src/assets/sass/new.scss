@@ -291,7 +291,7 @@ Jog Controls
 aside#jog {
     width: 270px;
     flex: 0 0 270px;
-    height: 510px;
+    height: 570px;
     padding:15px;
     border-radius: 6px;
 
@@ -309,7 +309,7 @@ aside#jog {
         flex-wrap: wrap;
 
         justify-content:space-around;
-        margin-bottom: 15px;
+        margin-bottom: 5px;
         .btn{
                 background-color: $btn-jog;
                 &.y.up{
@@ -434,6 +434,30 @@ aside#jog {
             }
         }
 
+    .coords-container{
+        width:270px;
+        display:flex;
+        justify-content:space-around;
+        align-items:center;
+        margin-bottom: 15px;
+        .coords{
+            text-align: left;
+            background-color: white;
+            padding:10px 0px 10px 5px;
+            border: 1px solid #DDD;
+            border-radius:3px;
+            margin-right:10px;
+            flex:0 0 40px;
+            width:$btn-size;
+            &:last-child {
+              margin-right:0px;
+            } 
+
+
+        }
+
+    }
+
 
 
 
@@ -460,25 +484,7 @@ aside#jog {
         }
 
     }
-    .coords-container{
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      margin-bottom: 15px;
-      .coords{
-        text-align: center;
-        border:1px solid $primary-black;
-        padding:5px;
-        border-radius:3px;
-        margin-right:10px;
-        // flex:0 0 $btn-size;
-        // height:$btn-size;
-        width:$btn-size;
-        &:last-child {
-          margin-right:0px;
-        }
-      }
-    }
+    
 }
 
 
@@ -487,10 +493,10 @@ Task Pane
 ******************************/
 
 section#task-pane {
-    width: 710px;
-    flex: 0 0 710px;
-    margin-left: 10px;
-    height: 536px;
+    width: 715px;
+    flex: 0 0 715px;
+    margin-left: 5px;
+    height: 596px;
     display: flex;
     flex-direction: row;
     align-items: center;
