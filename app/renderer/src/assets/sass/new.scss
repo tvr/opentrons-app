@@ -439,15 +439,17 @@ aside#jog {
         display:flex;
         justify-content:space-around;
         align-items:center;
+        margin-top: 15px;
         margin-bottom: 15px;
         .coords{
+            font-size: 11px;
             text-align: left;
             background-color: white;
-            padding:10px 0px 10px 5px;
-            border: 1px solid #DDD;
+            padding:5px 0px 5px 2px;
+            border: 1px solid #EEE;
             border-radius:3px;
-            margin-right:10px;
-            flex:0 0 40px;
+            margin-right:2px;
+            flex:1 0 45px;
             width:$btn-size;
             &:last-child {
               margin-right:0px;
