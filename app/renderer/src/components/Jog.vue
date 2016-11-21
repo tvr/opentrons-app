@@ -56,7 +56,7 @@
     props: ["busy"],
     data: function () {
       return {
-        placeable_increments: ["Slot",20,5,1,0.5,0.1],
+        placeable_increments: ["Slot",50,20,5,1,0.5,0.1],
         plunger_increments: [2,1,0.5,0.1]
       }
     },
