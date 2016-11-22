@@ -19,6 +19,6 @@
 				}
 				return coords
 			}
-	  }
+		}
 	}
 </script>
