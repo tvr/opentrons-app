@@ -15,8 +15,7 @@ from opentrons.util import trace
 from opentrons.util.vector import VectorEncoder
 
 sys.path.insert(0, os.path.abspath('..'))  # NOQA
-from server import helpers
-from server.process_manager import run_once
+from server.helpers import helpers, process_manager
 
 
 TEMPLATES_FOLDER = os.path.join(helpers.get_frozen_root() or '', 'templates')
@@ -626,7 +625,7 @@ if __name__ == "__main__":
     data_dir = os.environ.get('APP_DATA_DIR', os.getcwd())
     IS_DEBUG = os.environ.get('DEBUG', '').lower() == 'true'
     if not IS_DEBUG:
-        run_once(data_dir)
+        process_manager.run_once(data_dir)
 
     lg = logging.getLogger('opentrons-app')
     lg.info('Starting Flask Server')
