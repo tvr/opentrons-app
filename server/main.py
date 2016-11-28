@@ -592,6 +592,28 @@ def calibrate_plunger():
     })
 
 
+@app.route("/calibrate_belts", methods=["POST"])
+def calibrate_belts():
+
+    expected = request.json.get("expected")
+    measured = request.json.get("measured")
+
+    try:
+        for axis in 'xy':
+            robot._driver.calibrate_steps_per_mm(
+                axis, expected[axis], measured[axis])
+    except Exception as e:
+        return flask.jsonify({
+            'status': 'error',
+            'data': str(e)
+        })
+
+    return flask.jsonify({
+        'status': 'success',
+        'data': 'Please wait 5 seconds, then reconnect to the robot'
+    })
+
+
 # NOTE(Ahmed): DO NOT REMOVE socketio requires a confirmation from the
 # front end that a connection was established, this route does that.
 @socketio.on('connected')
