@@ -30,7 +30,6 @@ class CalibrationTestCase(unittest.TestCase):
             content_type='application/json')
         status = json.loads(response.data.decode())['status']
         self.assertEqual(status, 'success')
-        self.assertFalse(bool(self.robot.is_connected()))
 
         expected = [
             mock.call('x', 25, 26),

@@ -884,9 +884,6 @@ def calibrate_belts():
         for axis in 'xy':
             robot._driver.calibrate_steps_per_mm(
                 axis, expected[axis], measured[axis])
-
-        robot._driver.reset()
-        robot.disconnect()
     except Exception as e:
         return flask.jsonify({
             'status': 'error',
