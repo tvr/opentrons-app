@@ -2,17 +2,46 @@ var path = require('path')
 var webpack = require('webpack')
 
 module.exports = {
-  entry: './app/renderer/src/main.js',
+  entry: './app/renderer/main.js',
   output: {
     path: path.resolve(__dirname, './server/templates/dist'),
     publicPath: '/dist/',
     filename: 'build.js'
   },
+  resolve: {
+    extensions: ['', '.js', '.vue'],
+    fallback: [path.join(__dirname, 'node_modules')],
+    alias: {
+      renderer: path.resolve(__dirname, 'app/renderer'),
+      vue: 'vue/dist/vue.js',
+      sinon: 'sinon/pkg/sinon'
+    }
+  },
   resolveLoader: {
-    root: path.join(__dirname, 'node_modules'),
+    fallback: [path.join(__dirname, 'node_modules')]
   },
   module: {
+    noParse: [
+      /sinon/,
+      /socket.io/
+    ],
+    preLoaders: [
+      {
+        test: /\.vue$/,
+        loader: 'eslint',
+        exclude: /node_modules/
+      },
+      {
+        test: /\.js$/,
+        loader: 'eslint',
+        exclude: /vue-devtools|node_modules/
+      }
+    ],
     loaders: [
+      {
+        test: /sinon.*\.js$/,
+        loader: "imports?define=>false,require=>false"
+      },
       {
         test: /\.vue$/,
         loader: 'vue'
@@ -55,11 +84,6 @@ module.exports = {
   },
   headers: { "Access-Control-Allow-Origin": "http://localhost:5000", "Access-Control-Allow-Credentials": "true" },
   devtool: '#eval-source-map',
-  resolve: {
-    alias: {
-      vue: 'vue/dist/vue.js'
-    }
-  },
   target: "electron"
 }
 
