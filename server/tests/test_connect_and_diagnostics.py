@@ -1,5 +1,6 @@
 import unittest
 import json
+from unittest import mock
 import os
 
 from opentrons.robot import Robot
@@ -106,3 +107,25 @@ class ConnectDiagnosticsTestCase(unittest.TestCase):
             sorted(list(response['versions'].keys())),
             sorted(list(expected.keys()))
         )
+
+    def test_belt_calibration(self):
+        self.robot._driver.calibrate_steps_per_mm = mock.Mock()
+        arguments = {
+            'expected': {'x': 25, 'y': 25},
+            'measured': {'x': 26, 'y': 24}
+        }
+        response = self.app.post(
+            '/calibrate_belts',
+            data=json.dumps(dict(arguments)),
+            content_type='application/json')
+        status = json.loads(response.data.decode())['status']
+        self.assertEqual(status, 'success')
+
+        expected = [
+            mock.call('x', 25, 26),
+            mock.call('y', 25, 24)
+        ]
+
+        self.assertListEqual(
+            self.robot._driver.calibrate_steps_per_mm.mock_calls,
+            expected)

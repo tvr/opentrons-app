@@ -16,36 +16,28 @@ class UploadTestCase(unittest.TestCase):
 
         self.robot = Robot.get_instance()
 
-    def test_upload_and_run(self):
+        self.robot.connect(None, options={'limit_switches': False})
+
+    def upload_protocol(self):
         response = self.app.post('/upload', data={
             'file': (open(self.data_path + 'protocol.py', 'rb'), 'protocol.py')
         })
 
-        self.robot.connect(None, options={'limit_switches': False})
+        response = json.loads(response.data.decode())
+        self.assertEqual(response['status'], 'success')
 
-        status = json.loads(response.data.decode())['status']
-        self.assertEqual(status, 'success')
+        return response
+
+    def test_upload_and_run(self):
+        self.upload_protocol()
 
         response = self.app.get('/run')
 
         response = json.loads(response.data.decode())
         self.assertEqual(response['status'], 'success')
 
-    def test_upload_valid_python(self):
-        response = self.app.post('/upload', data={
-            'file': (open(self.data_path + 'protocol.py', 'rb'), 'protocol.py')
-        })
-
-        status = json.loads(response.data.decode())['status']
-        self.assertEqual(status, 'success')
-
     def test_get_instrument_placeables(self):
-        self.robot.connect(None, options={'limit_switches': False})
-        response = self.app.post('/upload', data={
-            'file': (open(self.data_path + 'protocol.py', 'rb'), 'protocol.py')
-        })
-        response = json.loads(response.data.decode())
-        self.assertEquals(response['status'], 'success')
+        self.upload_protocol()
 
         robot = Robot.get_instance()
 

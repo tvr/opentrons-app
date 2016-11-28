@@ -18,27 +18,12 @@ class CalibrationTestCase(unittest.TestCase):
         self.robot = robot
         self.robot.connect()
 
-    def test_belt_calibration(self):
-        self.robot._driver.calibrate_steps_per_mm = mock.Mock()
-        arguments = {
-            'expected': {'x': 25, 'y': 25},
-            'measured': {'x': 26, 'y': 24}
-        }
-        response = self.app.post(
-            '/calibrate_belts',
-            data=json.dumps(dict(arguments)),
-            content_type='application/json')
+    def upload_protocol(self):
+        response = self.app.post('/upload', data={
+            'file': (open(self.data_path + 'protocol.py', 'rb'), 'protocol.py')
+        })
         status = json.loads(response.data.decode())['status']
         self.assertEqual(status, 'success')
-
-        expected = [
-            mock.call('x', 25, 26),
-            mock.call('y', 25, 24)
-        ]
-
-        self.assertListEqual(
-            self.robot._driver.calibrate_steps_per_mm.mock_calls,
-            expected)
 
     def test_move_to_slot(self):
         arguments = {
@@ -63,13 +48,7 @@ class CalibrationTestCase(unittest.TestCase):
 
     def test_aspirate_dispense(self):
 
-        response = self.app.post('/upload', data={
-            'file': (open(self.data_path + 'protocol.py', 'rb'), 'protocol.py')
-        })
-
-        print(response.data)
-        status = json.loads(response.data.decode())['status']
-        self.assertEqual(status, 'success')
+        self.upload_protocol()
 
         self.assertEquals(self.robot._instruments['B'].max_volume, 10)
 
@@ -115,12 +94,7 @@ class CalibrationTestCase(unittest.TestCase):
 
     def test_move_to_plunger_position(self):
 
-        response = self.app.post('/upload', data={
-            'file': (open(self.data_path + 'protocol.py', 'rb'), 'protocol.py')
-        })
-
-        status = json.loads(response.data.decode())['status']
-        self.assertEqual(status, 'success')
+        self.upload_protocol()
 
         self.robot._instruments['B'].motor.move(12)
         self.robot._instruments['B'].calibrate('bottom')
@@ -136,17 +110,13 @@ class CalibrationTestCase(unittest.TestCase):
             '/move_to_plunger_position',
             data=json.dumps(dict(arguments)),
             content_type='application/json')
-        self.assertEqual(status, 'success')
+        response = json.loads(response.data.decode())
+        self.assertEqual(response['status'], 'success')
         current_pos = self.robot._driver.get_plunger_positions()['target']
         self.assertEquals(current_pos['b'], 12)
 
     def test_move_to_container(self):
-        response = self.app.post('/upload', data={
-            'file': (open(self.data_path + 'protocol.py', 'rb'), 'protocol.py')
-        })
-
-        status = json.loads(response.data.decode())['status']
-        self.assertEqual(status, 'success')
+        self.upload_protocol()
 
         self.robot.move_to = mock.Mock()
 
@@ -177,12 +147,7 @@ class CalibrationTestCase(unittest.TestCase):
         self.assertEquals(self.robot.move_to.mock_calls, expected)
 
     def test_calibrate_placeable(self):
-        response = self.app.post('/upload', data={
-            'file': (open(self.data_path + 'protocol.py', 'rb'), 'protocol.py')
-        })
-
-        status = json.loads(response.data.decode())['status']
-        self.assertEqual(status, 'success')
+        self.upload_protocol()
 
         arguments = {
             'label': 'test-plate',
@@ -206,11 +171,7 @@ class CalibrationTestCase(unittest.TestCase):
         self.assertEqual(status, 'success')
 
     def test_calibrate_plunger(self):
-        response = self.app.post('/upload', data={
-            'file': (open(self.data_path + 'protocol.py', 'rb'), 'protocol.py')
-        })
-        status = json.loads(response.data.decode())['status']
-        self.assertEqual(status, 'success')
+        self.upload_protocol()
 
         self.robot._instruments['B'].motor.move(2)
         arguments = {'position': 'top', 'axis': 'b'}
