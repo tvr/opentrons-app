@@ -55,7 +55,7 @@ describe('application launch', function () {
   })
 
   it('runs a protocol', function () {
-    let file = path.join(__dirname, '..', 'server', 'tests', 'data', '/simple_protocol.py')
+    let file = path.join(__dirname, '..', '..', 'server', 'tests', 'data', '/simple_protocol.py')
     let pauseTime = process.env.PAUSE_TIME || 0
     let connectDropDown = '//*[@id="connections"]'
     let virtualSmoothie = connectDropDown + '/option[3]'
@@ -77,9 +77,13 @@ describe('application launch', function () {
       .click(connectDropDown)
       .pause(pauseTime)
       .click(virtualSmoothie)
+
       .pause(pauseTime)
       .pause(1000)
       .chooseFile(uploadXpath, file)
+      .then(function () {
+        console.log('got here..')
+      })
       .pause(1000)
       .pause(pauseTime)
       .waitForText('.toast-message-text', 'Successfully uploaded simple_protocol.py')

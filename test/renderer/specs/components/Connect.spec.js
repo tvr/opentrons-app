@@ -71,7 +71,7 @@ describe('Connect.vue', () => {
     })
   })
 
-  it('disconnects from robot', () => {
+  it('disconnects from robot', done => {
     let mockStore = getMockStore()
     mockStore.state.isConnected = true
     mockStore.state.port = detectedPorts[0]
@@ -87,7 +87,10 @@ describe('Connect.vue', () => {
     connect.selected = detectedPorts[0]
     connect.disconnectRobot()
     expect(mockStore.actions.disconnectRobot.called).to.be.true
-    mockStore.state.port = detectedPorts
+    mockStore.state.port = null
+    mockStore.state.isConnected = false
+
+    // Ensure that HTML is rendered correctly after state is updated after disconnect
     Vue.nextTick(() => {
       let selectEl = vm.$el.querySelector('select#connections')
       expect(selectEl.options[selectEl.selectedIndex].innerHTML).to.equal('Select a port')
