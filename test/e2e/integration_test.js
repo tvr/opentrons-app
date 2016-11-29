@@ -77,13 +77,9 @@ describe('application launch', function () {
       .click(connectDropDown)
       .pause(pauseTime)
       .click(virtualSmoothie)
-
       .pause(pauseTime)
       .pause(1000)
       .chooseFile(uploadXpath, file)
-      .then(function () {
-        console.log('got here..')
-      })
       .pause(1000)
       .pause(pauseTime)
       .waitForText('.toast-message-text', 'Successfully uploaded simple_protocol.py')
