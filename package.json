@@ -15,7 +15,7 @@
     "start": "cross-env ENABLE_VIRTUAL_SMOOTHIE=true NODE_ENV=development electron app/",
     "unit-renderer": "karma start test/renderer/karma.conf.js --single-run",
     "unit-main": "mocha test/main/",
-    "integration": "cross-env ENABLE_VIRTUAL_SMOOTHIE=true mocha --timeout 60000 test/e2e/integration_test.js",
+    "e2e": "cross-env ENABLE_VIRTUAL_SMOOTHIE=true mocha --timeout 60000 test/e2e/integration_test.js",
     "test": "npm run unit; npm run integration; nosetests"
   },
   "devDependencies": {
