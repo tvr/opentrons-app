@@ -4,6 +4,7 @@ import sys
 import threading
 import json
 import time
+import urllib
 
 import flask
 import traceback
@@ -12,7 +13,7 @@ from flask_socketio import SocketIO
 from flask_cors import CORS
 
 from opentrons.instruments import Pipette
-from opentrons import robot
+from opentrons import robot, instruments, containers
 from opentrons.containers import placeable
 from opentrons.util import trace
 from opentrons.util.vector import VectorEncoder
@@ -58,9 +59,10 @@ def get_protocol_locals():
     from opentrons import robot, containers, instruments  # NOQA
     return locals()
 
-
+file_locals = None
 def load_python(stream, filename):
     global robot
+    global file_locals
     code = helpers.convert_byte_stream_to_str(stream)
     api_response = {'errors': [], 'warnings': []}
 
@@ -71,7 +73,9 @@ def load_python(stream, filename):
     )
     try:
         try:
-            exec(code, globals(), get_protocol_locals())
+            file_locals = None
+            exec(code)
+            file_locals = locals()
         except Exception as e:
             tb = e.__traceback__
             stack_list = traceback.extract_tb(tb)
@@ -102,6 +106,22 @@ def load_python(stream, filename):
     api_response['warnings'] = robot.get_warnings() or []
 
     return api_response
+
+
+@app.route("/exec", methods=["GET", "POST"])
+def exec_code():
+    try:
+        global file_locals
+        from urllib.parse import unquote
+        print(unquote(request.query_string.decode()))
+        code = unquote(request.query_string.decode())
+        exec(code, globals(), file_locals)
+    except Exception as e:
+        print(str(e))
+
+    return flask.jsonify({
+        'status': 'success'
+    })
 
 
 @app.route("/upload", methods=["POST"])
