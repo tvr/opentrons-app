@@ -1,3 +1,4 @@
+/* global describe, it, beforeEach, afterEach */
 let Application = require('spectron').Application
 let chai = require('chai')
 let chaiAsPromised = require('chai-as-promised')
@@ -60,7 +61,7 @@ describe('application launch', function () {
     let connectDropDown = '//*[@id="connections"]'
     let virtualSmoothie = connectDropDown + '/option[3]'
     let uploadXpath = '/html/body/div/section/span/form/div/input'
-    let saveButton = '//*[@id="task"]/button[1]'
+    let saveButton = '//*[@id="task"]/span/button[1]'
     let platePath = '//*[@id="step-list"]/div/span/div/ul/li[2]/a'
     let plungerPath = '//*[@id="step-list"]/div/span/div/ul/li[3]/a'
     let top = '//*[@id="task-pipette"]/span/div[1]/section[1]/button[1]'
@@ -71,7 +72,7 @@ describe('application launch', function () {
     let run = '//*[@id="run"]/button'
 
     this.app.client.execute(() => {
-      window.confirm = function () {return true}
+      window.confirm = function () { return true }
     })
     return this.app.client.waitUntilWindowLoaded(31950)
       .click(connectDropDown)

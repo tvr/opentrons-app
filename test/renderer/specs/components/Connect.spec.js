@@ -1,3 +1,4 @@
+/* global describe, it */
 import { expect } from 'chai'
 import Vue from 'vue'
 import Vuex from 'vuex'
@@ -93,6 +94,8 @@ describe('Connect.vue', () => {
     // Ensure that HTML is rendered correctly after state is updated after disconnect
     Vue.nextTick(() => {
       let selectEl = vm.$el.querySelector('select#connections')
+      let msg = 'Select a port'
+      expect(selectEl.options[selectEl.selectedIndex].innerHTML).to.equal(msg)
       expect(selectEl.options[selectEl.selectedIndex].innerHTML).to.equal('Select a port')
       done()
     })

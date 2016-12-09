@@ -1,3 +1,4 @@
+.sublime-project.sublime-workspace
 flip
 server/static/css
 .sass-cache
@@ -7,6 +8,8 @@ server/static/css
 .DS_Store
 calibrations
 server/calibrations
+smoothie
+server/smoothie
 
 # Logs
 logs
