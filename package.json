@@ -91,7 +91,11 @@
       "category": "productivity"
     },
     "win": {
-      "iconUrl": "https://s3.amazonaws.com/ot-app-builds/win/icon.ico"
+      "iconUrl": "https://s3.amazonaws.com/ot-app-builds/win/icon.ico",
+      "target": [
+        "squirrel",
+        "zip"
+      ]
     },
     "linux": {
       "category": "Science",
