@@ -64,7 +64,7 @@ def pyinstaller_build():
     """
 
     process_args = [
-        shutil.which("pyinstaller"),
+        "pyinstaller",
         "{}".format(os.path.join("scripts", "pyinstaller.spec")),
         "--workpath", PYINSTALLER_WORKPATH,
         "--distpath", PYINSTALLER_DISTPATH
