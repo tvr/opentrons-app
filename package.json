@@ -92,10 +92,7 @@
     },
     "win": {
       "iconUrl": "https://s3.amazonaws.com/ot-app-builds/win/icon.ico",
-      "target": [
-        "squirrel",
-        "zip"
-      ]
+      "target": ["squirrel"]
     },
     "linux": {
       "category": "Science",
