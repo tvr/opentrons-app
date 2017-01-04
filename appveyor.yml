@@ -3,8 +3,8 @@ os: unstable
 environment:
   matrix:
     - language: cpp
-      PYTHON3: "C:\\Python35"
-      PYTHON3_VERSION: "3.5.2"
+      PYTHON3: "C:\\Python34"
+      PYTHON3_VERSION: "3.4.0"
       PYTHON3_ARCH: "64"
 
       # PYTHON2.7 REQUIRED FOR NODE-GYP & ELECTRON
@@ -52,7 +52,7 @@ init:
   # SET THE RELEVANT PYTHON AND PIP LOCATIONS IN THE PATH
   - cmd: set PATH=%PYTHON3%;%PYTHON3%\scripts;%PYTHON2%;%PYTHON2%\scripts;%PATH%
   - cmd: ECHO Path - %PATH%
-  - ps: cp C:\Python35\python.exe C:\Python34\python3.5.exe
+  - ps: cp C:\Python34\python.exe C:\Python34\python3.4.exe
 
 install:
   # NOTE: OTONE-FRONTEND NOW CLONED INTO C:\\PROJECTS\OTOONE-FRONTEND
