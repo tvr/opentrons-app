@@ -4,7 +4,7 @@ environment:
   matrix:
     - language: cpp
       PYTHON3: "C:\\Python34"
-      PYTHON3_VERSION: "3.4.0"
+      PYTHON3_VERSION: "3.4.3"
       PYTHON3_ARCH: "64"
 
       # PYTHON2.7 REQUIRED FOR NODE-GYP & ELECTRON
