@@ -110,6 +110,7 @@
     "vue": "2.0.5",
     "vue-loader": "9.9.3",
     "vue-resource": "1.0.3",
+    "vue-template-compiler": "2.0.5",
     "vue-router": "2.0.2",
     "vuex": "2.0.0",
     "vuex-toast": "0.0.2",
