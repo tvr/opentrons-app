@@ -75,15 +75,11 @@ def pyinstaller_build():
         pyinstaller_process = subprocess.Popen(process_args, shell=True)
     else:
         pyinstaller_process = subprocess.Popen(process_args)
-    std_op, std_err_op = pyinstaller_process.communicate()
 
     if pyinstaller_process.returncode != 0:
         print(script_tab + "ERROR: PyInstaller returned with exit code: %s" %
               pyinstaller_process.returncode)
-        print(script_tab + "PyInstaller STD OUT: {}".format(std_op))
-        print(script_tab + "PyInstaller STD ERR: {}".format(std_err_op))
         return False
-
     return True
 
 
@@ -117,8 +113,6 @@ def generate_static_assets():
         webpack_process = subprocess.Popen(process_args, shell=True)
     else:
         webpack_process = subprocess.Popen(process_args)
-
-    webpack_process.communicate()
     if webpack_process.returncode != 0:
         print(script_tab + "ERROR: webpack returned with exit code: %s" %
               webpack_process.returncode)
